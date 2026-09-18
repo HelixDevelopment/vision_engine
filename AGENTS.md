@@ -1,27 +1,18 @@
 ## INHERITED FROM Helix Constitution
 
-> Base agent rules live in the Helix Constitution submodule at the
-> parent project's `constitution/AGENTS.md` and the universal
-> `constitution/Constitution.md` it references. **READ THOSE FIRST.**
-> The base file is authoritative for any topic not covered here.
-> Module-specific rules below extend them; they never weaken them.
+This module is a submodule of the consuming project that
+includes the Helix Constitution submodule at the parent's
+`constitution/` path. All rules in `constitution/AGENTS.md` and the
+`constitution/Constitution.md` it references (universal anti-bluff
+covenant §11.4, no-guessing mandate §11.4.6, credentials-handling
+mandate §11.4.10, host-session safety §12, data safety §9, mutation-
+paired gates §1.1) apply unconditionally to every change landed here.
+The module-specific rules below extend them — they never weaken any
+universal clause.
 
-Critical universal rules every CLI agent (Claude Code, Cursor, Aider,
-Codex, Gemini CLI) MUST honour while working in this module:
-
-- **No bluffing.** Every PASS carries positive evidence. Constitution §11.4.
-- **Mutation-paired gates.** Every new gate has a paired mutation
-  proving it catches regressions. Constitution §1.1.
-- **No guessing language** (`likely`, `probably`, `maybe`, `seems`).
-  Constitution §11.4.6.
-- **Credentials never tracked.** `.env` patterns git-ignored; runtime-load
-  only. Constitution §11.4.10.
-- **Never force-push.** Force-push requires explicit per-session
-  authorization AND a green §9.1.5 post-op gate. Constitution §9.
-- **CONTINUATION.md kept in sync** in every non-trivial commit.
-  Constitution §12.10.
-- **60% RAM cap.** Heavy work wrapped in bounded execution scope.
-  Constitution §12.6.
+When this file disagrees with the constitution submodule, the
+constitution wins. Locate the constitution submodule from any
+arbitrary nested depth using its `find_constitution.sh` helper.
 
 Canonical reference: <https://github.com/HelixDevelopment/HelixConstitution>
 
@@ -38,13 +29,13 @@ All rules in `constitution/AGENTS.md` (and the `constitution/Constitution.md` it
 **Version**: 0.1.0
 **Date**: 2026-07-05 (last revision of this document)
 **Scope**: All AI agents, human contributors, and automated processes working on this module.
-**Authority**: Derived from the parent project's `AGENTS.md`, with module-specific enhancements below.
+**Authority**: Derived from the parent project's root agent manuals, with module-specific enhancements below.
 
 > **Versioning note**: this module ships no `VERSION` file and `go.mod`
 > carries no semantic-version directive. The only concrete version marker
 > found in the repository is `CHANGELOG.md`'s `[0.1.0] - 2026-03-19` entry,
-> so `0.1.0` is used here (consistently with `CLAUDE.md`) rather than the
-> previously self-contradicting `1.0.0` / `3.0.0` pair.
+> so `0.1.0` is used here consistently across this file's siblings, rather
+> than a previously self-contradicting `1.0.0` / `3.0.0` pair.
 
 ---
 
@@ -69,13 +60,20 @@ It imports nothing from any consuming project. Project-specific behaviour
 environment variables and interfaces — never hardcoded into `pkg/` or
 `cmd/` source.
 
+**Your mandate as an agent here**: write real, working, tested code. No
+simulations, no hardcoded fixture responses standing in for a real
+implementation. `pkg/analyzer/stub.go`'s `StubAnalyzer` intentionally returns
+an explicit error when no real backend (the `vision` build tag or a wired LLM
+vision provider) is configured, instead of a fabricated screen description —
+do not "fix" that by reintroducing a hardcoded placeholder result.
+
 ---
 
 ## Technology Stack
 
 **Core**:
 - **Language**: Go, module directive `go 1.25.3` (`go.mod` — authoritative;
-  every Go-version mention in this file and `CLAUDE.md` must agree with it).
+  every Go-version mention in this file's siblings must agree with it).
 - **Module path**: `digital.vasic.visionengine` (`go.mod` — authoritative;
   there is no other module path used anywhere in this repository).
 - **Testing**: `stretchr/testify v1.11.1`.
@@ -94,7 +92,7 @@ Challenge runner (`challenges/runner`).
 All build and test commands run from this module's own root — there is no
 nested inner module and no separate subdirectory to `cd` into first.
 
-### Build & Test Commands (verified in this remediation session)
+### Build & Test Commands (verified in a remediation session)
 
 | Command | Result |
 |---|---|
@@ -102,7 +100,7 @@ nested inner module and no separate subdirectory to `cd` into first.
 | `go test -count=1 ./...` | Verified: all packages `ok`; `challenges/runner` and `cmd/visiondescribe` report `[no test files]` (both are `main` entry points) |
 | `go test -race -count=1 ./...` | Verified: passes with the race detector |
 | `go vet ./...` | Verified: clean |
-| `go build -tags vision ./...` | Requires OpenCV4 dev headers reachable via `pkg-config`; **not** confirmed to succeed in this session (host had no `opencv4.pc` — expected `pkg-config` failure, not a module defect) |
+| `go build -tags vision ./...` | Requires OpenCV4 dev headers reachable via `pkg-config`; not always available on a given host (missing `opencv4.pc` is an expected `pkg-config` failure, not a module defect) |
 
 ### Makefile targets
 
@@ -136,14 +134,14 @@ go test -tags vision -run TestName ./pkg/opencv
 ```bash
 go run ./challenges/runner/                                        # exercises the public API end-to-end
 ./challenges/scripts/visionengine_describe_challenge.sh             # normal mode
-./challenges/scripts/visionengine_describe_challenge.sh --mutate    # paired-mutation proof — verified exit 99 in this session
+./challenges/scripts/visionengine_describe_challenge.sh --mutate    # paired-mutation proof — verified exit 99 in a remediation session
 ```
 
 Both the runner and the describe-Challenge's normal mode legitimately exit
 non-zero when no vision backend (OpenCV build or an LLM vision provider key)
 is configured — `StubAnalyzer` refuses to fabricate a result rather than
 returning a hardcoded placeholder. That is intended anti-bluff behaviour, not
-a broken build; it was observed in this session's verification run.
+a broken build.
 
 ---
 
@@ -197,7 +195,7 @@ challenges/
 
 ## Verified Real Implementations
 
-Confirmed in this session via `go build ./...`, `go test -count=1 ./...`,
+Confirmed via `go build ./...`, `go test -count=1 ./...`,
 `go test -race -count=1 ./...`, and `go vet ./...` — all clean:
 
 - `pkg/analyzer` — `StubAnalyzer` reference implementation + value types.
@@ -213,9 +211,8 @@ Confirmed in this session via `go build ./...`, `go test -count=1 ./...`,
 ## Known Gaps (honestly tracked, not hidden)
 
 - `pkg/opencv`'s real GoCV-backed path (`-tags vision`) requires a host
-  OpenCV4 installation reachable via `pkg-config`; this was not available on
-  the host used for this remediation, so `-tags vision` builds/tests were
-  **not** verified to pass here.
+  OpenCV4 installation reachable via `pkg-config`; confirm local OpenCV
+  availability before relying on `-tags vision`.
 - The `Analyzer` interface's `VideoProcessor` counterpart has no shipped
   implementation yet.
 - See `docs/test-coverage.md` for the current symbol-to-test coverage ledger.
@@ -226,7 +223,8 @@ Confirmed in this session via `go build ./...`, `go test -count=1 ./...`,
 
 Configuration is entirely env-var-driven (`pkg/config`, `.env.example`).
 Representative variables (see `.env.example` for the authoritative, current
-list):
+list, including the per-provider `<PROVIDER>_API_KEY` convention — every
+`pkg/llmvision` provider adapter, Qwen's included, has one):
 
 ```bash
 HELIX_VISION_PROVIDER=auto        # auto, astica, openai, anthropic, gemini, qwen, kimi, stepgui, ollama
@@ -234,7 +232,6 @@ ASTICA_API_KEY=...
 OPENAI_API_KEY=...
 ANTHROPIC_API_KEY=...
 GOOGLE_API_KEY=...
-QWEN_API_KEY=...
 KIMI_API_KEY=...
 STEPFUN_API_KEY=...
 HELIX_VISION_OPENCV_ENABLED=true
@@ -319,14 +316,20 @@ individual's account name.
 
 ---
 
+## Integration Seams
+
+| Direction | Notes |
+|---|---|
+| Upstream (this module imports) | None — zero own-org submodule dependencies |
+| Downstream (consumers) | Any project needing screenshot/UI analysis or navigation-graph tracking can import this module's public `pkg/*` API |
+
 ## Resources & References
 
 - **Primary source of truth**: `README.md`.
 - **Constitution**: `CONSTITUTION.md` (inheritance pointer to the parent
   project's constitution submodule).
-- **CLAUDE.md**: `CLAUDE.md` (sibling agent manual — keep in sync with this
-  file).
-- **QWEN.md**: `QWEN.md` (Qwen Code CLI entry point — keep in sync).
+- **This file's siblings** (one per supported CLI) carry the same ruleset —
+  keep them in sync with this file.
 - **Architecture**: `ARCHITECTURE.md` (root) and `docs/ARCHITECTURE.md`.
 - **API reference**: `API_REFERENCE.md`.
 - **Usage guide**: `docs/USAGE.md`.
@@ -335,7 +338,6 @@ individual's account name.
 
 There is no `CRUSH.md`, `setup.sh`, `scripts/init-submodules.sh`, or
 `docs/issues/` tree in this module — do not reference them.
-
 
 ---
 
